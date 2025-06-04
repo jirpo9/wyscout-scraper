@@ -1,0 +1,55 @@
+# Git and version control
+.git
+.gitignore
+.github/
+
+# Python cache and environments
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+ENV/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+output/
+data/raw/
+logs/
+*.log
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Testing
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak

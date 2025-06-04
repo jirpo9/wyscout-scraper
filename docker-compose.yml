@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  wyscout-scraper:
+    build: .
+    container_name: wyscout-scraper
+    restart: unless-stopped
+    
+    # Environment variables
+    environment:
+      - DEBUG=False
+      - LOG_LEVEL=INFO
+      - REQUEST_DELAY=1.0
+      - MAX_RETRIES=3
+      - OUTPUT_DIR=/app/output
+    
+    # Volume mounts
+    volumes:
+      - ./output:/app/output
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./.env:/app/.env:ro  # Read-only env file
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    
+    # Networks
+    networks:
+      - scraper-network
+
+  # Optional: Add a monitoring service
+  monitoring:
+    image: prom/prometheus:latest
+    container_name: scraper-monitoring
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - scraper-network
+    profiles:
+      - monitoring
+
+networks:
+  scraper-network:
+    driver: bridge
+
+volumes:
+  scraper-data:
+    driver: local

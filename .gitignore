@@ -1,0 +1,84 @@
+# ===== CITLIVÉ SOUBORY =====
+.env
+.env                    # Environment variables
+*.key                   # API keys
+*.pem                   # Certificates
+secrets/               # Secret files
+config_local.py        # Local config overrides
+
+# ===== PYTHON =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ===== VIRTUAL ENVIRONMENTS =====
+venv/
+env/
+ENV/
+.env/
+.venv/
+
+# ===== IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== DATA A OUTPUT =====
+data/raw/*              # Surová data
+!data/raw/.gitkeep      # Ale zachovat strukturu
+output/*.pdf            # Generované PDF
+output/*.txt            # Generované TXT
+logs/*.log              # Log soubory
+*.db                    # Databáze
+*.sqlite3
+
+# ===== IMAGES =====
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.tiff
+*.webp
+wyscout_images/         # Stažené obrázky
+
+# ===== SYSTEM =====
+.DS_Store               # macOS
+Thumbs.db              # Windows
+*.tmp
+*.temp
+
+# ===== TESTING =====
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# ===== DOCUMENTATION =====
+docs/_build/
+
+# ===== MISC =====
+*.backup
+*.bak
+node_modules/          # Pokud byste používali JS tools
