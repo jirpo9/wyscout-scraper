@@ -22,7 +22,6 @@ from PIL import Image as PILImage
 from reportlab.lib import colors
 from reportlab.platypus.tableofcontents import TableOfContents
 from io import BytesIO
-from PIL import Image as PILImage
 
 
 # Setup logging
@@ -31,10 +30,10 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-"""Scraper pro stahování a zpracování dat z Wyscout."""
-
 
 class WyscoutScraper:
+    """Scraper pro stahování a zpracování dat z Wyscout."""
+    
     def __init__(self, base_url: str = "https://dataglossary.wyscout.com/"):
         self.base_url = base_url
         self.session = requests.Session()
@@ -266,41 +265,32 @@ class WyscoutScraper:
 
         logger.info(f"Scraped {len(self.all_content)} pages total")
 
-def resize_image_for_pdf(self, img_path: str,
-                         max_width: int = 400,
-                         max_height: int = 300) -> str:
-    """Resize & convert image so it always
-       (a) is in RGB,
-       (b) fits into a PDF frame."""
-    try:
-        with PILImage.open(img_path) as img:
-            # 1) conversion of palette / RGBA images to RGB
-            if img.mode in ("P", "RGBA"):
-                img = img.convert("RGB")
+    def resize_image_for_pdf(self, img_path: str, max_width: int = 400, max_height: int = 300) -> str:
+        """Resize & convert image so it always fits into a PDF frame."""
+        try:
+            with PILImage.open(img_path) as img:
+                # 1) conversion of palette / RGBA images to RGB
+                if img.mode in ("P", "RGBA"):
+                    img = img.convert("RGB")
 
-            # 2) ratio calculation
-            w, h = img.size
-            ratio = min(max_width / w, max_height / h, 1.0)
-            new_size = (int(w * ratio), int(h * ratio))
+                # 2) ratio calculation
+                w, h = img.size
+                ratio = min(max_width / w, max_height / h, 1.0)
+                new_size = (int(w * ratio), int(h * ratio))
 
-            # 3) if it is reduced in size → save as *_resized.jpg
-            if ratio < 1.0:
-                resized_path = (
-                    Path(img_path).with_suffix("").as_posix() + "_resized.jpg"
-                )
-                img = img.resize(new_size, PILImage.Resampling.LANCZOS)
-                img.save(resized_path, "JPEG", quality=85)
-                return resized_path
+                # 3) if it is reduced in size → save as *_resized.jpg
+                if ratio < 1.0:
+                    resized_path = (
+                        Path(img_path).with_suffix("").as_posix() + "_resized.jpg"
+                    )
+                    img = img.resize(new_size, PILImage.Resampling.LANCZOS)
+                    img.save(resized_path, "JPEG", quality=85)
+                    return resized_path
 
-        # fallback (already in RGB and correct size)
-        return img_path
-    except Exception as exc:  # pylint: disable=broad-except
-        logger.error("Image resize failed for %s: %s", img_path, exc)
-        return img_path
-
-        return img_path
-    except Exception as e:
-            logger.error(f"Error resizing image {img_path}: {e}")
+            # fallback (already in RGB and correct size)
+            return img_path
+        except Exception as exc:
+            logger.error("Image resize failed for %s: %s", img_path, exc)
             return img_path
 
     def create_pdf(self, filename: str = "wyscout_data_glossary.pdf"):
@@ -349,9 +339,7 @@ def resize_image_for_pdf(self, img_path: str,
                 )
                 story.append(Spacer(1, 0.1 * inch))
 
-
-
-# Details section
+            # Details section
             if content["details"]:
                 story.append(Paragraph("<b>Details:</b>", self.styles["Normal"]))
                 for detail in content["details"]:
