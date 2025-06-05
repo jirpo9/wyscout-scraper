@@ -17,6 +17,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
+from reportlab.lib.utils import ImageReader
+from PIL import Image as PILImage
 from reportlab.lib import colors
 from reportlab.platypus.tableofcontents import TableOfContents
 from io import BytesIO
@@ -264,30 +266,40 @@ class WyscoutScraper:
 
         logger.info(f"Scraped {len(self.all_content)} pages total")
 
-    def resize_image_for_pdf(
-        self, img_path: str, max_width: int = 400, max_height: int = 300
-    ) -> str:
-        """Resize image to fit in PDF"""
-        try:
-            with PILImage.open(img_path) as img:
-                # Calculate new size maintaining aspect ratio
-                img_width, img_height = img.size
-                ratio = min(max_width / img_width, max_height / img_height)
+def resize_image_for_pdf(self, img_path: str,
+                         max_width: int = 400,
+                         max_height: int = 300) -> str:
+    """Resize & convert image so it always
+       (a) is in RGB,
+       (b) fits into a PDF frame."""
+    try:
+        with PILImage.open(img_path) as img:
+            # 1) conversion of palette / RGBA images to RGB
+            if img.mode in ("P", "RGBA"):
+                img = img.convert("RGB")
 
-                if ratio < 1:  # Only resize if image is larger
-                    new_width = int(img_width * ratio)
-                    new_height = int(img_height * ratio)
-                    img = img.resize(
-                        (new_width, new_height), PILImage.Resampling.LANCZOS
-                    )
+            # 2) ratio calculation
+            w, h = img.size
+            ratio = min(max_width / w, max_height / h, 1.0)
+            new_size = (int(w * ratio), int(h * ratio))
 
-                    # Save resized image
-                    resized_path = img_path.replace(".jpg", "_resized.jpg")
-                    img.save(resized_path, "JPEG", quality=85)
-                    return resized_path
+            # 3) if it is reduced in size → save as *_resized.jpg
+            if ratio < 1.0:
+                resized_path = (
+                    Path(img_path).with_suffix("").as_posix() + "_resized.jpg"
+                )
+                img = img.resize(new_size, PILImage.Resampling.LANCZOS)
+                img.save(resized_path, "JPEG", quality=85)
+                return resized_path
 
-            return img_path
-        except Exception as e:
+        # fallback (already in RGB and correct size)
+        return img_path
+    except Exception as exc:  # pylint: disable=broad-except
+        logger.error("Image resize failed for %s: %s", img_path, exc)
+        return img_path
+
+        return img_path
+    except Exception as e:
             logger.error(f"Error resizing image {img_path}: {e}")
             return img_path
 
@@ -337,23 +349,9 @@ class WyscoutScraper:
                 )
                 story.append(Spacer(1, 0.1 * inch))
 
-            # Images
-            for img_info in content["images"]:
-                try:
-                    resized_path = self.resize_image_for_pdf(img_info["path"])
-                    img = Image(resized_path)
-                    story.append(img)
-                    if img_info["alt"]:
-                        story.append(
-                            Paragraph(
-                                f"<i>{img_info['alt']}</i>", self.styles["Normal"]
-                            )
-                        )
-                    story.append(Spacer(1, 0.1 * inch))
-                except Exception as e:
-                    logger.error(f"Error adding image to PDF: {e}")
 
-            # Details section
+
+# Details section
             if content["details"]:
                 story.append(Paragraph("<b>Details:</b>", self.styles["Normal"]))
                 for detail in content["details"]:
@@ -368,6 +366,23 @@ class WyscoutScraper:
                 for metric in content["metrics"]:
                     story.append(Paragraph(metric, self.styles["Normal"]))
                 story.append(Spacer(1, 0.1 * inch))
+
+            # Images
+            for img_info in content["images"]:
+                try:
+                    resized_path = self.resize_image_for_pdf(img_info["path"])
+                    with PILImage.open(resized_path) as pil_img:
+                        w, h = pil_img.size
+                        ratio = min(400 / w, 300 / h, 1.0)
+                        img = Image(resized_path, width=w * ratio, height=h * ratio)
+                    story.append(img)
+                    if img_info["alt"]:
+                        story.append(
+                            Paragraph(f"<i>{img_info['alt']}</i>", self.styles["Normal"])
+                        )
+                    story.append(Spacer(1, 0.1 * inch))
+                except Exception as e:
+                    logger.error("Error adding image to PDF: %s", e)
 
             # Add page break between sections
             story.append(PageBreak())
