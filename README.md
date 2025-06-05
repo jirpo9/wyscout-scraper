@@ -389,7 +389,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support & Community
 
 - 🐛 **Bug Reports:** [GitHub Issues](https://github.com/jirpo9/wyscout-scraper/issues)
-- 💡 **Feature Requests:** [GitHub Discussions](https://github.com/jirpo9/wyscout-scraper/discussions)
 - ⭐ **Star this repo** if you find it helpful!
 
 ---
